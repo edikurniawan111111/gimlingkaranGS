@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NEXUS GEOMETRIA - Petualangan Matematika</title>
+    <style>
+        /* =========================================
+           1. CORE CSS (100% OFFLINE)
+           ========================================= */
+        :root {
+            --neon-cyan: #00f3ff;
+            --neon-pink: #ff007f;
+            --neon-purple: #bc13fe;
+            --dark-bg: #030308;
+            --panel-bg: rgba(5, 5, 16, 0.85);
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: var(--font-main);
+            background-color: var(--dark-bg);
+            color: white;
+            overflow: hidden;
+            touch-action: none;
+            width: 100vw; height: 100vh;
+        }
+
+        /* Typography */
+        .cyber-font {
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .text-cyan { color: var(--neon-cyan); }
+        .text-pink { color: var(--neon-pink); }
+        .text-purple { color: var(--neon-purple); }
+        
+        /* Background & Scanlines */
+        .grid-bg {
+            position: fixed; inset: 0; z-index: 0; opacity: 0.1;
+            background-image: linear-gradient(var(--neon-cyan) 1px, transparent 1px), linear-gradient(90deg, var(--neon-cyan) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        .scanlines {
+            position: fixed; inset: 0; z-index: 999; opacity: 0.3; pointer-events: none;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
+            background-size: 100% 4px;
+        }
+
+        /* Utility */
+        .hidden { display: none !important; }
+        
+        /* =========================================
+           UI ELEMENTS
+           ========================================= */
+        .btn-cyber {
+            background: rgba(0, 243, 255, 0.05);
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+        }
+        .btn-cyber:hover {
+            background: var(--neon-cyan);
+            color: var(--dark-bg);
+            box-shadow: 0 0 15px rgba(0,243,255,0.6);
+        }
+
+        /* Form Login Design */
+        .login-box {
+            background: var(--panel-bg);
+            backdrop-filter: blur(10px);
+            border-top: 3px solid var(--neon-cyan);
+            border-bottom: 3px solid var(--neon-pink);
+            padding: 40px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.8), 0 0 20px rgba(0, 243, 255, 0.1);
+            position: relative;
+            z-index: 2;
+        }
+        .login-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border: none;
+            border-bottom: 2px solid #444;
+            color: var(--neon-cyan);
+            padding: 12px;
+            font-size: 1.1rem;
+            font-family: 'Courier New', Courier, monospace;
+            outline: none;
+            margin-bottom: 25px;
+            transition: 0.3s;
+            text-align: center;
+        }
+        .login-input:focus {
+            border-bottom-color: var(--neon-cyan);
+            background: rgba(0, 243, 255, 0.05);
+            box-shadow: 0 5px 15px -5px rgba(0, 243, 255, 0.3);
+        }
+        .glow-ring {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 130px; height: 130px; border-radius: 50%;
+            border: 2px solid var(--neon-cyan);
+            animation: pulse-ring 2s infinite; z-index: -1;
+        }
+
+        /* =========================================
+           HUD & PETA (Map System)
+           ========================================= */
+        .hud-bar {
+            width: 100%; height: 70px;
+            background: rgba(2, 2, 8, 0.95);
+            border-bottom: 1px solid var(--neon-cyan);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 20px; box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+            z-index: 100;
+        }
+        .hud-left { display: flex; gap: 10px; }
+        .hud-btn {
+            background: rgba(0,0,0,0.5); border: 1px solid var(--neon-cyan);
+            border-radius: 5px; width: 40px; height: 40px;
+            display: flex; justify-content: center; align-items: center;
+            color: var(--neon-cyan); font-weight: bold; cursor: pointer; transition: 0.2s;
+            font-family: sans-serif; font-size: 1.2rem;
+        }
+        .hud-btn:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 10px var(--neon-cyan); }
+        .hud-right { display: flex; align-items: center; gap: 15px; }
+
+        /* Style Khusus Tombol Keluar */
+        .btn-logout {
+            border-color: var(--neon-pink) !important;
+            color: var(--neon-pink) !important;
+        }
+        .btn-logout:hover {
+            background: var(--neon-pink) !important;
+            color: #fff !important;
+            box-shadow: 0 0 10px var(--neon-pink) !important;
+        }
+
+        #map-container {
+            flex: 1; position: relative; width: 100%; overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .map-path { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; }
+        
+        .node {
+            position: absolute; width: 55px; height: 55px; border-radius: 50%;
+            background: var(--dark-bg); border: 2px solid #444; color: #444;
+            display: flex; justify-content: center; align-items: center; font-size: 1.3rem;
+            font-weight: bold; z-index: 5; cursor: not-allowed; transition: all 0.4s;
+            transform: translate(-50%, -50%);
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .node.unlocked {
+            border-color: var(--neon-cyan); color: var(--neon-cyan); cursor: pointer;
+            box-shadow: 0 0 15px rgba(0,243,255,0.4), inset 0 0 10px rgba(0,243,255,0.2);
+            animation: pulse-node 2s infinite;
+        }
+        .node.completed {
+            border-color: var(--neon-purple); color: var(--neon-purple); cursor: pointer;
+            box-shadow: 0 0 10px rgba(188,19,254,0.4);
+        }
+        .node.boss { width: 70px; height: 70px; border-radius: 10px; transform: translate(-50%, -50%) rotate(45deg); }
+        .node.boss > span { transform: rotate(-45deg); font-size: 1.5rem; }
+        
+        .node-label {
+            position: absolute; top: 120%; left: 50%; transform: translateX(-50%);
+            white-space: nowrap; font-size: 0.75rem; background: rgba(0,0,0,0.8);
+            padding: 3px 8px; border-radius: 4px; color: #ddd; border: 1px solid #333;
+            letter-spacing: 1px; pointer-events: none;
+        }
+
+        /* =========================================
+           GAME AREA & MODALS
+           ========================================= */
+        .game-layout { display: flex; flex: 1; width: 100%; flex-direction: row; }
+        .visual-area { flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; position: relative; min-height: 300px; }
+        .panel-area { flex: 1; display: flex; flex-direction: column; padding: 25px; background: rgba(0,0,0,0.5); border-left: 1px solid rgba(0,243,255,0.2); overflow-y: auto;}
+        
+        .answer-btn {
+            background: rgba(0, 243, 255, 0.05); border: 1px solid rgba(0, 243, 255, 0.3);
+            color: white; padding: 15px; margin-bottom: 12px; text-align: left;
+            cursor: pointer; transition: all 0.2s; font-size: 1.1rem;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+        }
+        .answer-btn:hover { background: rgba(0,243,255,0.2); border-color: var(--neon-cyan); padding-left: 25px; }
+
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+            display: flex; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal-box {
+            background: var(--panel-bg); border: 1px solid var(--neon-cyan);
+            padding: 30px; max-width: 500px; width: 90%;
+            box-shadow: 0 0 30px rgba(0,243,255,0.1); text-align: center; position: relative;
+        }
+        .close-btn {
+            position: absolute; top: 10px; right: 15px; color: var(--neon-pink);
+            font-size: 1.8rem; cursor: pointer; background: none; border: none; font-weight: bold;
+        }
+
+        canvas { max-width: 100%; max-height: 100%; filter: drop-shadow(0 0 8px var(--neon-cyan)); }
+
+        @keyframes pulse-ring { 0% { transform: translate(-50%, -50%) scale(0.8); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1.3); opacity: 0; } }
+        @keyframes pulse-node { 0% { box-shadow: 0 0 0 0 rgba(0, 243, 255, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(0, 243, 255, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 243, 255, 0); } }
+
+        /* Responsif Layar Kecil (Mobile) */
+        @media (max-width: 768px) {
+            .game-layout { flex-direction: column; }
+            .visual-area { height: 40%; flex: none; }
+            .panel-area { height: 60%; flex: none; border-left: none; border-top: 1px solid rgba(0,243,255,0.2); }
+            .hud-bar { padding: 0 10px; }
+            .hud-right { font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="grid-bg"></div>
+    <div class="scanlines"></div>
+
+    <!-- =========================================
+         SCREEN 1: SPLASH & LOGIN
+         ========================================= -->
+    <div id="screen-splash" style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100vw; height: 100vh; position: absolute; z-index: 50;">
+        <div style="position: relative; margin-bottom: 25px;">
+            <div class="glow-ring"></div>
+            <!-- Ikon Game -->
+            <img src="./assets/images/iconlab.png" alt="Icon Game" style="width:110px; height:110px; border-radius:15px; position: relative; z-index: 2; border: 2px solid var(--neon-cyan);" onerror="this.style.display='none'">
+        </div>
+        
+        <h1 class="cyber-font text-cyan" style="font-size: 2.2rem; margin-bottom: 5px; text-shadow: 0 0 10px var(--neon-cyan); text-align: center;">NEXUS GEOMETRIA</h1>
+        <p style="color: #aaa; margin-bottom: 30px; letter-spacing: 1px; font-size: 0.9rem; text-align: center;">[ SISTEM PEMBELAJARAN VIRTUAL ]</p>
+        
+        <form class="login-box" onsubmit="event.preventDefault(); login();">
+            <h2 class="cyber-font text-pink" style="margin-bottom: 30px; font-size: 1.3rem;">OTORISASI PENGGUNA</h2>
+            
+            <input type="text" id="input-name" class="login-input" placeholder="NAMA LENGKAP" autocomplete="off" required>
+            <input type="text" id="input-school" class="login-input" placeholder="ASAL SEKOLAH" autocomplete="off" required>
+            
+            <button type="submit" class="btn-cyber cyber-font" style="width: 100%; margin-top: 15px;">MASUK SISTEM</button>
+        </form>
+    </div>
+
+    <!-- =========================================
+         SCREEN 2: MAP / PETA WILAYAH
+         ========================================= -->
+    <div id="screen-map" style="display: none; flex-direction: column; width: 100vw; height: 100vh; position: absolute; z-index: 20;">
+        <!-- HUD BAR -->
+        <div class="hud-bar">
+            <div class="hud-left">
+                <button class="hud-btn" onclick="showModal('modal-dev')" title="Profil Pengembang">!</button>
+                <button class="hud-btn" onclick="showModal('modal-credits')" title="Referensi & Kredit">🤖</button>
+            </div>
+            <div class="hud-right">
+                <div style="text-align: right;">
+                    <div class="cyber-font text-cyan" id="hud-name" style="font-size: 0.9rem;">USER: -</div>
+                    <div class="cyber-font text-pink" style="font-size: 0.8rem; margin-top: 2px;">SKOR: <span id="hud-score">0</span></div>
+                </div>
+                <!-- TOMBOL KELUAR (EXIT) -->
+                <button class="hud-btn btn-logout" onclick="logoutGame()" title="Keluar Game">⏻</button>
+            </div>
+        </div>
+
+        <!-- AREA PETA -->
+        <div id="map-container">
+            <svg class="map-path" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <path id="path-bg" d="M 50 85 L 25 65 L 75 45 L 25 25 L 50 10" fill="transparent" stroke="#222" stroke-width="0.8" stroke-dasharray="2,2" />
+                <path id="path-progress" d="M 50 85 L 25 65 L 75 45 L 25 25 L 50 10" fill="transparent" stroke="var(--neon-cyan)" stroke-width="1.2" style="transition: stroke-dashoffset 1s ease-in-out;" />
+            </svg>
+
+            <!-- Titik Node -->
+            <div class="node unlocked" id="node-1" style="top: 85%; left: 50%;" onclick="openLevel(1)">
+                1 <div class="node-label">Alpha: Anatomi</div>
+            </div>
+            <div class="node" id="node-2" style="top: 65%; left: 25%;" onclick="openLevel(2)">
+                2 <div class="node-label">Beta: Sudut</div>
+            </div>
+            <div class="node" id="node-3" style="top: 45%; left: 75%;" onclick="openLevel(3)">
+                3 <div class="node-label">Gamma: Singgung</div>
+            </div>
+            <div class="node" id="node-4" style="top: 25%; left: 25%;" onclick="openLevel(4)">
+                4 <div class="node-label">Delta: Segiempat</div>
+            </div>
+            <div class="node boss" id="node-5" style="top: 10%; left: 50%;" onclick="openLevel(5)">
+                <span>👑</span> <div class="node-label" style="transform: translateX(-50%) rotate(0deg); top: 125%;">Inti Nexus</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================
+         SCREEN 3: GAMEPLAY (TANTANGAN)
+         ========================================= -->
+    <div id="screen-game" style="display: none; flex-direction: column; width: 100vw; height: 100vh; position: absolute; z-index: 30;">
+        <div class="hud-bar">
+            <div class="hud-left">
+                <button class="btn-cyber cyber-font" style="padding: 8px 15px; font-size: 0.9rem;" onclick="backToMap()">⮜ PETA</button>
+            </div>
+            <div style="text-align: center; flex: 1; padding: 0 10px;">
+                <h3 class="text-cyan cyber-font uppercase" id="game-title" style="font-size: 1.1rem; letter-spacing: 2px;">-</h3>
+                <span class="text-pink cyber-font" id="game-progress" style="font-size: 0.8rem;">Target Poin: 0</span>
+            </div>
+            <div class="hud-right">
+                <button class="hud-btn" style="border-color: var(--neon-purple); color: var(--neon-purple);" onclick="showModal('modal-petunjuk')" title="Petunjuk">?</button>
+            </div>
+        </div>
+
+        <div class="game-layout">
+            <!-- RUANG VISUAL: Menampilkan Bantuan / Clue Gambar Dinamis -->
+            <div class="visual-area">
+                <canvas id="game-canvas"></canvas>
+            </div>
+            <!-- RUANG SOAL -->
+            <div class="panel-area">
+                <h2 id="q-text" style="margin-bottom: 25px; font-size: 1.1rem; line-height: 1.6; font-family: sans-serif; color: #eee;">Memuat...</h2>
+                <div id="options-container" style="display: flex; flex-direction: column;">
+                    <!-- Tombol di-inject JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================
+         MODALS
+         ========================================= -->
+    <div id="modal-petunjuk" class="modal-overlay hidden">
+        <div class="modal-box">
+            <button class="close-btn" onclick="closeModal('modal-petunjuk')">×</button>
+            <h2 class="text-cyan cyber-font" style="margin-bottom:20px; font-size: 1.5rem;">PETUNJUK MISI</h2>
+            <div id="petunjuk-text" style="text-align: left; font-size: 1rem; color: #ccc; line-height: 1.6; margin-bottom: 25px;"></div>
+            <button class="btn-cyber cyber-font" style="width: 100%;" onclick="closeModal('modal-petunjuk')">SAYA PAHAM</button>
+        </div>
+    </div>
+
+    <div id="modal-dev" class="modal-overlay hidden">
+        <div class="modal-box">
+            <button class="close-btn" onclick="closeModal('modal-dev')">×</button>
+            <h2 class="text-cyan cyber-font" style="margin-bottom:20px;">PROFIL PENGEMBANG</h2>
+            <img src="./assets/images/profil.png" alt="Foto Edi Kurniawan" style="width:130px; height:130px; border-radius:50%; border: 3px solid var(--neon-cyan); margin: 0 auto 15px auto; display: block; object-fit: cover;" onerror="this.src=''; this.alt='[Foto Tidak Ditemukan]'; this.style.border='1px dashed #00f3ff';">
+            <h3 class="text-pink" style="font-size: 1.5rem; margin-bottom: 5px;">Edi Kurniawan, S.Pd.</h3>
+            <p style="color: #ddd; font-weight: bold;">SMA Negeri 5 Berau</p>
+            <p style="font-size: 0.9rem; margin-top: 15px; color: #aaa; font-style: italic;">"Menghadirkan masa depan pembelajaran Matematika melalui gamifikasi interaktif."</p>
+        </div>
+    </div>
+
+    <div id="modal-credits" class="modal-overlay hidden">
+        <div class="modal-box">
+            <button class="close-btn" onclick="closeModal('modal-credits')">×</button>
+            <h2 class="text-cyan cyber-font" style="margin-bottom:20px;">REFERENSI & KREDIT</h2>
+            <div style="text-align: left; color: #ddd; line-height: 1.8; font-size: 1rem; margin-bottom: 10px;">
+                <p><b>Materi Utama:</b> Buku Matematika SMA</p>
+                <p><b>AI Development:</b> Gemini.ai</p>
+                <p><b>Desain & Aset:</b> Canva.com & ChatGPT</p>
+                <p><b>Arsitektur:</b> HTML5 & JS Offline</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-result" class="modal-overlay hidden">
+        <div class="modal-box">
+            <h2 id="result-title" class="text-cyan cyber-font" style="font-size: 1.8rem; margin-bottom: 10px;">STATUS LEVEL</h2>
+            <p id="result-desc" style="margin-bottom: 20px; color: #ddd;">-</p>
+            <div class="text-pink cyber-font" style="font-size: 3.5rem; margin-bottom: 20px;" id="result-score">0</div>
+            <button class="btn-cyber cyber-font" style="width: 100%;" onclick="finishLevelAction()">LANJUTKAN</button>
+        </div>
+    </div>
+
+    <!-- =========================================
+         LOGIKA JAVASCRIPT
+         ========================================= -->
+    <script>
+        const audio = {
+            bgm: new Audio('./assets/sounds/bgm.mp3'),
+            click: new Audio('./assets/sounds/click.mp3'),
+            correct: new Audio('./assets/sounds/correct.mp3'),
+            wrong: new Audio('./assets/sounds/wrong.mp3'),
+            splash: new Audio('./assets/sounds/splash.mp3'),
+            ting: new Audio('./assets/sounds/ting.mp3'),
+            cheer: new Audio('./assets/sounds/cheer.mp3')
+        };
+        audio.bgm.loop = true; audio.bgm.volume = 0.4;
+
+        function playSound(type) {
+            try { if(audio[type]) { audio[type].currentTime = 0; audio[type].play().catch(()=>{}); } } catch(e) {}
+        }
+
+        let player = { name: '', school: '', globalScore: 0, maxUnlocked: 1, currentPlayingLevel: 0 };
+        
+        // Data Soal
+        const levelData = {
+            1: { title: "Wilayah Alpha: Anatomi", type: 'visual', threshold: 200, briefing: "Identifikasi unsur dasar lingkaran pada gambar hologram.<br><br>Target: 200 Poin. Benar(+100) Salah(-20).", tasks: [ { id: 'jari-jari', q: "Identifikasi garis yang menghubungkan titik pusat dengan satu titik pada lingkaran.", name: "Jari-jari" }, { id: 'tali-busur', q: "Identifikasi garis lurus di dalam lingkaran yang menghubungkan dua titik pada lengkungan.", name: "Tali Busur" }, { id: 'diameter', q: "Identifikasi tali busur terpanjang yang melewati titik pusat lingkaran.", name: "Diameter" } ], optionsPool: ["Jari-jari", "Tali Busur", "Diameter", "Busur", "Apotema", "Garis Singgung"] },
+            2: { title: "Wilayah Beta: Sudut", type: 'logic', threshold: 200, briefing: "<b>Aturan:</b> Sudut Pusat = 2 × Sudut Keliling (jika menghadap busur yang sama).", tasks: [ { q: "Sudut Pusat yang menghadap busur XY adalah 150°. Berapakah besar Sudut Keliling yang menghadap busur yang sama?", opts: ["75°", "150°", "300°", "60°"], ans: 0, v: 'sudut' }, { q: "Sudut keliling lingkaran adalah 45°. Berapakah besar sudut pusatnya jika menghadap busur yang sama?", opts: ["22.5°", "45°", "90°", "180°"], ans: 2, v: 'sudut' }, { q: "Lingkaran pusat O. Titik A,B,C di keliling. Jika ∠AOB = 120°, berapakah besar ∠ACB?", opts: ["120°", "60°", "240°", "90°"], ans: 1, v: 'sudut' } ] },
+            3: { title: "Wilayah Gamma: Singgung", type: 'logic', threshold: 200, briefing: "<b>Aturan:</b> Garis singgung selalu SIKU-SIKU (90°) dengan jari-jari. Gunakan Pythagoras (a² + b² = c²).", tasks: [ { q: "Berapakah sudut antara garis singgung lingkaran dan jari-jari pada titik singgung?", opts: ["45°", "60°", "90°", "180°"], ans: 2, v: 'singgung' }, { q: "Jarak titik pusat ke titik P di luar lingkaran = 13 cm. Jari-jari = 5 cm. Panjang garis singgung?", opts: ["8 cm", "12 cm", "15 cm", "144 cm"], ans: 1, v: 'singgung' }, { q: "Panjang garis singgung dari titik Q = 24 cm. Jarak titik Q ke pusat = 25 cm. Panjang jari-jari?", opts: ["5 cm", "7 cm", "10 cm", "12 cm"], ans: 1, v: 'singgung' } ] },
+            4: { title: "Wilayah Delta: Segiempat", type: 'logic', threshold: 150, briefing: "<b>Sandi:</b> Jumlah sudut yang saling berhadapan pada segiempat tali busur adalah selalu 180°.", tasks: [ { q: "Segiempat tali busur ABCD, sudut A = 85°. Berapa besar sudut C (yang berhadapan dengan A)?", opts: ["85°", "95°", "105°", "180°"], ans: 1, v: 'segiempat' }, { q: "Segiempat tali busur PQRS. Jika ∠P = (2x)° dan ∠R yang berhadapan = (3x)°, berapakah nilai x?", opts: ["30", "36", "45", "60"], ans: 1, v: 'segiempat' } ] },
+            5: { title: "Inti Nexus: Persekutuan", type: 'logic', threshold: 100, briefing: "<b>BOSS:</b><br>Luar: d = √(p² - (R-r)²)<br>Dalam: d = √(p² - (R+r)²)", tasks: [ { q: "R=14 cm, r=4 cm. Jarak pusat = 26 cm. Garis singgung persekutuan LUAR?", opts: ["20 cm", "24 cm", "10 cm", "25 cm"], ans: 1, v: 'persekutuan' }, { q: "R=7 cm, r=2 cm. Jarak pusat = 15 cm. Garis singgung persekutuan DALAM?", opts: ["9 cm", "12 cm", "15 cm", "14 cm"], ans: 1, v: 'persekutuan' } ] }
+        };
+
+        let gameState = { taskIndex: 0, levelScore: 0, currentTasks: [] };
+
+        function showScreen(screenId) {
+            document.getElementById('screen-splash').style.display = 'none';
+            document.getElementById('screen-map').style.display = 'none';
+            document.getElementById('screen-game').style.display = 'none';
+            document.getElementById(screenId).style.display = 'flex';
+        }
+
+        function showModal(id) { playSound('click'); document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { playSound('click'); document.getElementById(id).classList.add('hidden'); }
+
+        function login() {
+            const name = document.getElementById('input-name').value.trim();
+            const school = document.getElementById('input-school').value.trim();
+            
+            player.name = name; player.school = school;
+            
+            document.getElementById('hud-name').innerText = `${name.toUpperCase()} | ${school.toUpperCase()}`;
+            
+            playSound('splash'); playSound('bgm');
+            showScreen('screen-map');
+            updateMapVisuals();
+        }
+
+        function logoutGame() {
+            playSound('click');
+            player = { name: '', school: '', globalScore: 0, maxUnlocked: 1, currentPlayingLevel: 0 };
+            document.getElementById('input-name').value = '';
+            document.getElementById('input-school').value = '';
+            
+            audio.bgm.pause(); audio.bgm.currentTime = 0;
+            showScreen('screen-splash');
+        }
+
+        function updateMapVisuals() {
+            document.getElementById('hud-score').innerText = player.globalScore;
+            for(let i = 1; i <= 5; i++) {
+                const node = document.getElementById('node-'+i);
+                if(i < player.maxUnlocked) {
+                    node.className = 'node completed' + (i===5 ? ' boss' : '');
+                } else if (i === player.maxUnlocked) {
+                    node.className = 'node unlocked' + (i===5 ? ' boss' : '');
+                } else {
+                    node.className = 'node' + (i===5 ? ' boss' : '');
+                }
+            }
+            const path = document.getElementById('path-progress');
+            const pathLen = path.getTotalLength();
+            path.style.strokeDasharray = pathLen;
+            path.style.strokeDashoffset = pathLen - (pathLen * ((player.maxUnlocked - 1) / 4));
+        }
+
+        function openLevel(levelNum) {
+            if(levelNum > player.maxUnlocked) { playSound('wrong'); return; }
+            playSound('click');
+            
+            player.currentPlayingLevel = levelNum;
+            const data = levelData[levelNum];
+            
+            document.getElementById('petunjuk-text').innerHTML = data.briefing;
+            showModal('modal-petunjuk');
+
+            gameState.taskIndex = 0; gameState.levelScore = 0;
+            gameState.currentTasks = [...data.tasks].sort(() => Math.random() - 0.5);
+            document.getElementById('game-title').innerText = data.title;
+            
+            showScreen('screen-game');
+            
+            // PERBAIKAN LOGIKA CANVAS BLANK
+            // Panggil loadTask() lebih dulu agar canvasActive = true
+            // Lalu panggil resizeCanvas() agar ia segera memicu renderFrame()
+            setTimeout(() => {
+                loadTask();
+                resizeCanvas();
+            }, 100); 
+        }
+
+        function backToMap() {
+            playSound('click'); showScreen('screen-map');
+            cancelAnimationFrame(animationId); canvasActive = false;
+        }
+
+        function loadTask() {
+            const data = levelData[player.currentPlayingLevel];
+            document.getElementById('game-progress').innerText = `Progres: ${gameState.taskIndex + 1}/${gameState.currentTasks.length} | Poin: ${gameState.levelScore} / ${data.threshold}`;
+
+            if(gameState.taskIndex >= gameState.currentTasks.length) { evalLevelCompletion(); return; }
+
+            const task = gameState.currentTasks[gameState.taskIndex];
+            document.getElementById('q-text').innerHTML = task.q;
+            
+            const optContainer = document.getElementById('options-container');
+            optContainer.innerHTML = '';
+
+            // AKTIFKAN STATUS CANVAS SEBELUM RESIZE
+            canvasActive = true; 
+
+            if (data.type === 'visual') {
+                drawTask = task.id;
+                let opts = [{text: task.name, isCorrect: true}];
+                let wrongPool = data.optionsPool.filter(n => n !== task.name).sort(() => 0.5 - Math.random());
+                for(let i=0; i<3; i++) opts.push({text: wrongPool[i], isCorrect: false});
+                opts.sort(() => 0.5 - Math.random());
+
+                opts.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = 'answer-btn cyber-font'; btn.innerText = `> ${opt.text}`;
+                    btn.onclick = () => handleAnswer(opt.isCorrect, btn, 100, 20);
+                    optContainer.appendChild(btn);
+                });
+            } else {
+                drawTask = task.v; // Memanggil Visual Clue berdasarkan soal
+                
+                task.opts.forEach((optText, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'answer-btn cyber-font'; btn.innerText = `${String.fromCharCode(65+index)}. ${optText}`;
+                    btn.onclick = () => handleAnswer((index === task.ans), btn, 100, 30);
+                    optContainer.appendChild(btn);
+                });
+            }
+
+            // Jika canvas sudah berjalan (perpindahan soal), paksa update frame baru
+            cancelAnimationFrame(animationId);
+            renderFrame();
+        }
+
+        function handleAnswer(isCorrect, btnElement, pointWin, pointLoss) {
+            const btns = document.getElementById('options-container').querySelectorAll('button');
+            btns.forEach(b => b.disabled = true);
+
+            if(isCorrect) {
+                playSound('correct');
+                btnElement.style.backgroundColor = 'rgba(0,243,255,0.5)'; btnElement.style.borderColor = 'var(--neon-cyan)';
+                gameState.levelScore += pointWin; player.globalScore += pointWin;
+                setTimeout(() => { gameState.taskIndex++; loadTask(); }, 1000);
+            } else {
+                playSound('wrong');
+                btnElement.style.backgroundColor = 'rgba(255,0,127,0.5)'; btnElement.style.borderColor = 'var(--neon-pink)';
+                gameState.levelScore -= pointLoss; if(gameState.levelScore < 0) gameState.levelScore = 0; 
+                setTimeout(() => {
+                    btnElement.style.backgroundColor = ''; btnElement.style.borderColor = '';
+                    btns.forEach(b => b.disabled = false);
+                    document.getElementById('game-progress').innerText = `Progres: ${gameState.taskIndex + 1}/${gameState.currentTasks.length} | Poin: ${gameState.levelScore}`;
+                }, 800);
+            }
+        }
+
+        function evalLevelCompletion() {
+            canvasActive = false; cancelAnimationFrame(animationId);
+            const data = levelData[player.currentPlayingLevel];
+            const titleEl = document.getElementById('result-title'); const descEl = document.getElementById('result-desc');
+            const scoreEl = document.getElementById('result-score');
+            
+            scoreEl.innerText = `${gameState.levelScore} PTS`;
+
+            if(gameState.levelScore >= data.threshold) {
+                titleEl.innerText = "MERETAS BERHASIL"; titleEl.className = "text-cyan cyber-font";
+                if(player.currentPlayingLevel === 5) {
+                    descEl.innerText = "SELAMAT! Anda meretas Inti Nexus dan menguasai materi Lingkaran!"; playSound('cheer');
+                } else {
+                    descEl.innerText = `Luar biasa. Target poin terpenuhi (${data.threshold}). Wilayah selanjutnya terbuka.`; playSound('ting');
+                    if(player.maxUnlocked === player.currentPlayingLevel) player.maxUnlocked++;
+                }
+            } else {
+                titleEl.innerText = "AKSES DITOLAK"; titleEl.className = "text-pink cyber-font";
+                descEl.innerText = `Gagal mencapai target (${data.threshold}). Pelajari petunjuk dan coba lagi.`; playSound('wrong');
+            }
+            showModal('modal-result');
+        }
+
+        function finishLevelAction() { closeModal('modal-result'); backToMap(); updateMapVisuals(); }
+
+        // --- ENGINE CANVAS DINAMIS ---
+        const canvas = document.getElementById('game-canvas'); const ctx = canvas.getContext('2d');
+        let cx, cy, radius, canvasActive = false, drawTask = '', animationId;
+
+        function resizeCanvas() {
+            const parent = canvas.parentElement; 
+            if (!parent) return;
+
+            // Pastikan fallback ukuran benar-benar kokoh meskipun DOM telat respon
+            let pWidth = parent.clientWidth;
+            let pHeight = parent.clientHeight;
+            
+            let size = Math.min(pWidth, pHeight) - 40;
+            
+            // Jaga-jaga jika terdeteksi 0 atau sangat kecil karena transisi 'display' CSS
+            if (size < 100) {
+                size = Math.min(window.innerWidth / 2, window.innerHeight) - 100;
+                if (size < 200) size = 250; // Ultimate fallback
+            }
+
+            canvas.width = size; canvas.height = size; cx = size / 2; cy = size / 2; radius = size * 0.35;
+            
+            if(canvasActive) {
+                cancelAnimationFrame(animationId);
+                renderFrame();
+            }
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        function setNeon(color, blur = 15) { ctx.shadowBlur = blur; ctx.shadowColor = color; ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 3; }
+
+        function renderFrame() {
+            if(!canvasActive) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const time = Date.now() / 800; 
+
+            // Grid Latar Belakang
+            ctx.shadowBlur = 0; ctx.strokeStyle = 'rgba(0, 243, 255, 0.05)'; ctx.lineWidth = 1;
+            for(let i=0; i<canvas.width; i+=20) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke(); }
+
+            ctx.font = 'bold 15px Courier New'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+
+            // GAMBAR LINGKARAN DASAR (Kecuali level Persekutuan 2 Lingkaran)
+            if(drawTask !== 'persekutuan') {
+                setNeon('rgba(0, 243, 255, 0.3)', 5); ctx.beginPath(); ctx.arc(cx, cy, radius, 0, Math.PI * 2); ctx.stroke();
+                ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI * 2); ctx.fill();
+                
+                // Animasi Orbit
+                ctx.fillStyle = 'var(--neon-pink)';
+                ctx.beginPath(); ctx.arc(cx + Math.cos(time*2)*radius, cy + Math.sin(time*2)*radius, 4, 0, Math.PI*2); ctx.fill();
+            }
+
+            // GAMBAR CLUE VISUAL SPESIFIK
+            if(drawTask === 'jari-jari') { 
+                setNeon('#ff007f', 20); ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + radius, cy); ctx.stroke(); 
+                ctx.fillStyle='white'; ctx.shadowBlur=0; ctx.fillText("CLUE: HUBUNGKAN PUSAT & TEPI", cx, cy + radius + 25);
+            } 
+            else if(drawTask === 'diameter') { 
+                setNeon('#ff007f', 20); ctx.beginPath(); ctx.moveTo(cx - radius, cy); ctx.lineTo(cx + radius, cy); ctx.stroke(); 
+                ctx.fillStyle='white'; ctx.shadowBlur=0; ctx.fillText("CLUE: MELEWATI TITIK TENGAH", cx, cy + radius + 25);
+            }
+            else if(drawTask === 'tali-busur') { 
+                setNeon('#ff007f', 20); const x1 = cx + radius * Math.cos(Math.PI/4); const y1 = cy + radius * Math.sin(Math.PI/4); const x2 = cx + radius * Math.cos(3*Math.PI/4); const y2 = cy + radius * Math.sin(3*Math.PI/4); ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); 
+                ctx.fillStyle='white'; ctx.shadowBlur=0; ctx.fillText("CLUE: POTONGAN DALAM", cx, cy + radius + 25);
+            }
+            else if(drawTask === 'sudut') {
+                setNeon('#bc13fe', 15);
+                const A = {x: cx + radius*Math.cos(Math.PI*0.25), y: cy + radius*Math.sin(Math.PI*0.25)};
+                const B = {x: cx + radius*Math.cos(Math.PI*0.75), y: cy + radius*Math.sin(Math.PI*0.75)};
+                const C = {x: cx + radius*Math.cos(-Math.PI*0.5), y: cy + radius*Math.sin(-Math.PI*0.5)};
+                ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(cx, cy); ctx.lineTo(B.x, B.y); ctx.stroke(); 
+                ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(C.x, C.y); ctx.lineTo(B.x, B.y); ctx.stroke(); 
+                ctx.fillStyle='white'; ctx.shadowBlur=0; ctx.fillText("CLUE: PUSAT = 2x KELILING", cx, cy + radius + 25);
+            }
+            else if(drawTask === 'singgung') {
+                setNeon('#00f3ff', 15);
+                const P = {x: cx + radius, y: cy};
+                ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(P.x, P.y); ctx.stroke();
+                setNeon('#ff007f', 15);
+                ctx.beginPath(); ctx.moveTo(P.x, P.y - 60); ctx.lineTo(P.x, P.y + 60); ctx.stroke(); 
+                ctx.fillStyle='white'; ctx.shadowBlur=0; ctx.fillText("CLUE: TEGAK LURUS (90°)", cx, cy + radius + 25);
+            }
+            else if(drawTask === 'segiempat') {
+                setNeon('#ff007f', 15);
+                const p1 = -Math.PI*0.2; const p2 = Math.PI*0.1; const p3 = Math.PI*0.8; const p4 = -Math.PI*0.9;
+                const P1 = {x: cx + radius*Math.cos(p1), y: cy + radius*Math.sin(p1)};
+                const P2 = {x: cx + radius*Math.cos(p2), y: cy + radius*Math.sin(p2)};
+                const P3 = {x: cx + radius*Math.cos(p3), y: cy + radius*Math.sin(p3)};
+                const P4 = {x: cx + radius*Math.cos(p4), y: cy + radius*Math.sin(p4)};
+                ctx.beginPath(); ctx.moveTo(P1.x, P1.y); ctx.lineTo(P2.x, P2.y); ctx.lineTo(P3.x, P3.y); ctx.lineTo(P4.x, P4.y); ctx.closePath(); ctx.stroke();
+                ctx.fillStyle='white'; ctx.shadowBlur=0; ctx.fillText("CLUE: SUDUT BERHADAPAN = 180°", cx, cy + radius + 25);
+            }
+            else if (drawTask === 'persekutuan') {
+                const r1 = radius * 0.8; const r2 = radius * 0.4; const distance = radius * 1.5;
+                const c1x = cx - distance/2; const c1y = cy; const c2x = cx + distance/2; const c2y = cy;
+                
+                setNeon('rgba(0, 243, 255, 0.4)', 5);
+                ctx.beginPath(); ctx.arc(c1x, c1y, r1, 0, Math.PI*2); ctx.stroke();
+                ctx.beginPath(); ctx.arc(c2x, c2y, r2, 0, Math.PI*2); ctx.stroke();
+                
+                setNeon('#ff007f', 15);
+                ctx.beginPath(); ctx.moveTo(c1x, c1y - r1); ctx.lineTo(c2x, c2y - r2); ctx.stroke(); 
+                
+                ctx.fillStyle='white'; ctx.shadowBlur=0; ctx.fillText("CLUE: JARAK KEDUA PUSAT", cx, cy + radius + 25);
+            }
+
+            cancelAnimationFrame(animationId);
+            animationId = requestAnimationFrame(renderFrame);
+        }
+    </script>
+</body>
+</html>
